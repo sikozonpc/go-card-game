@@ -1,6 +1,7 @@
 package game
 
 import (
+	"fmt"
 	"log"
 	"math/rand"
 	"time"
@@ -11,6 +12,7 @@ const DeckNaxLen = 30
 
 // Card : Card
 type Card struct {
+	ID     string `json:"id"`
 	Name   string `json:"name"`
 	Health int    `json:"health"`
 	Damage int    `json:"damage"`
@@ -23,10 +25,11 @@ type Deck struct {
 
 // Player : Player struct
 type Player struct {
-	health    int
-	mana      int
-	Graveyard []Card
-	Hand      []Card
+	health      int
+	mana        int
+	Graveyard   []Card
+	Hand        []Card
+	Battlefield []Card
 }
 
 // Board : Board struct
@@ -42,8 +45,8 @@ func PopulateBoard() Board {
 	hand2 := deck.Draw(3)
 
 	board := Board{
-		PlayerOne: Player{30, 0, []Card{}, hand1},
-		PlayerTwo: Player{30, 0, []Card{}, hand2},
+		PlayerOne: Player{30, 0, []Card{}, hand1, []Card{}},
+		PlayerTwo: Player{30, 0, []Card{}, hand2, []Card{}},
 	}
 
 	return board
@@ -93,13 +96,42 @@ func CreateDeck() Deck {
 }
 
 // Attack : A card attacks another card
-func (c Card) Attack(target Card) {
-	log.Printf("Card %v ATTACKED %v", c, target)
+func (p *Player) Attack(attacker Card, defender Card, defenderPlayer Player) {
+	if !isCardInBattlefield(attacker, *p) {
+		log.Printf("Card %v is not in the battlefield and it's trying to attack.", attacker)
+	}
+	if !isCardInBattlefield(defender, defenderPlayer) {
+		log.Printf("Card %v is not in the battlefield and it's trying to attack.", defender)
+	}
 
+	log.Printf("Card %v ATTACKED %v", attacker, defender)
 	// apply the attac damage
-	target.Health -= c.Damage
+	defender.Health -= attacker.Damage
 	// recoil damage
-	c.Health -= target.Damage
+	attacker.Health -= defender.Damage
 
-	log.Printf("Resulted from ATTACK %v ATTACKED %v", c, target)
+	if attacker.Health <= 0 {
+		killCard(*p, attacker)
+	}
+	if defender.Health <= 0 {
+		killCard(defenderPlayer, defender)
+	}
+
+	log.Printf("Resulted from ATTACK %v ATTACKED %v", attacker, defender)
+}
+
+func killCard(p Player, c Card) {
+	// remove from battlefield
+	fmt.Println("Not Implemented")
+	// add to player graveyard
+}
+
+func isCardInBattlefield(c Card, p Player) bool {
+	for _, card := range p.Battlefield {
+		if card.ID == c.ID {
+			return true
+		}
+	}
+
+	return false
 }

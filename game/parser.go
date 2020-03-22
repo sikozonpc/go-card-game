@@ -29,6 +29,11 @@ func CardsParser() Deck {
 
 	d := Deck{}
 
+	// add unique ID to card
+	for i, val := range d.Cards {
+		d.Cards[i].ID = i
+	}
+
 	json.Unmarshal(jsonBytes, &d)
 
 	return d
