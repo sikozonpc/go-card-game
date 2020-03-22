@@ -1,3 +1,3 @@
-module github.com/sikozonpc/card-game
+module github.com/sikozonpc/go-card-game
 
 go 1.13
