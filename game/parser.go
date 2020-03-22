@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 )
 
 func openJSON(path string) []byte {
@@ -30,8 +31,8 @@ func CardsParser() Deck {
 	d := Deck{}
 
 	// add unique ID to card
-	for i, val := range d.Cards {
-		d.Cards[i].ID = i
+	for i := range d.Cards {
+		d.Cards[i].ID = strconv.Itoa(i)
 	}
 
 	json.Unmarshal(jsonBytes, &d)
