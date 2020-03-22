@@ -1,7 +1,7 @@
 package game
 
 import (
-	"fmt"
+	"log"
 	"math/rand"
 	"time"
 )
@@ -11,9 +11,9 @@ const DeckNaxLen = 30
 
 // Card : Card
 type Card struct {
-	Name   string  `json:"name"`
-	Health float32 `json:"health"`
-	Damage float32 `json:"damage"`
+	Name   string `json:"name"`
+	Health int    `json:"health"`
+	Damage int    `json:"damage"`
 }
 
 // Deck : Collection of cards
@@ -21,14 +21,36 @@ type Deck struct {
 	Cards []Card
 }
 
-func Init() {
-	d := CreateDeck()
-	d.Shuffle()
-	fmt.Println(len(d.Cards), d)
+// Player : Player struct
+type Player struct {
+	health    int
+	mana      int
+	Graveyard []Card
+	Hand      []Card
+}
+
+// Board : Board struct
+type Board struct {
+	PlayerOne Player
+	PlayerTwo Player
+}
+
+// PopulateBoard : Initializes a new board and fills it with data
+func PopulateBoard() Board {
+	deck := CreateDeck()
+	hand1 := deck.Draw(3)
+	hand2 := deck.Draw(3)
+
+	board := Board{
+		PlayerOne: Player{30, 0, []Card{}, hand1},
+		PlayerTwo: Player{30, 0, []Card{}, hand2},
+	}
+
+	return board
 }
 
 // Shuffle : Shuffles the deck
-func (d Deck) Shuffle() {
+func (d *Deck) Shuffle() {
 	seed := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(seed)
 
@@ -36,6 +58,22 @@ func (d Deck) Shuffle() {
 		randint := rnd.Intn(len(d.Cards))
 		d.Cards[i] = d.Cards[randint]
 	}
+}
+
+// Draw : Draws `n` cards from the deck
+func (d *Deck) Draw(n int) []Card {
+	cards := make([]Card, n)
+
+	for i := 0; i < n; i++ {
+		// retrieve card from deck
+		cards[i] = d.Cards[i]
+
+		copy(d.Cards[i:], d.Cards[i+1:])
+		d.Cards[len(d.Cards)-1] = Card{}
+		d.Cards = d.Cards[:len(d.Cards)-1]
+	}
+
+	return cards
 }
 
 // CreateDeck : Randomly selects from the collection of cards and creates a Deck
@@ -52,4 +90,16 @@ func CreateDeck() Deck {
 	}
 
 	return Deck{cards}
+}
+
+// Attack : A card attacks another card
+func (c Card) Attack(target Card) {
+	log.Printf("Card %v ATTACKED %v", c, target)
+
+	// apply the attac damage
+	target.Health -= c.Damage
+	// recoil damage
+	c.Health -= target.Damage
+
+	log.Printf("Resulted from ATTACK %v ATTACKED %v", c, target)
 }
