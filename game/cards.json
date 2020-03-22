@@ -6,17 +6,17 @@
       "damage": 1
     },
     {
-      "name": "Lazy goblin",
+      "name": "Lazy Goblin",
       "health": 1,
       "damage": 2
     },
     {
-      "name": "Beserker goblin",
+      "name": "Beserker Goblin",
       "health": 3,
       "damage": 3
     },
     {
-      "name": "Magic ballon",
+      "name": "Magic Ballon",
       "health": 1,
       "damage": 5
     },
@@ -29,6 +29,36 @@
       "name": "Noblemen",
       "health": 5,
       "damage": 3
+    },
+    {
+      "name": "Fury Raptor",
+      "health": 3,
+      "damage": 2
+    },
+    {
+      "name": "Baby Dragon",
+      "health": 1,
+      "damage": 1
+    },
+    {
+      "name": "Spirit Wolf",
+      "health": 5,
+      "damage": 3
+    },
+    {
+      "name": "Flame Ant",
+      "health": 2,
+      "damage": 1
+    },
+    {
+      "name": "Mountain Dragon",
+      "health": 7,
+      "damage": 7
+    },
+    {
+      "name": "Undead horsemen",
+      "health": 4,
+      "damage": 2
     }
   ]
 }
