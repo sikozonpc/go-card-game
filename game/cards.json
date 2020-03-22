@@ -1,0 +1,34 @@
+{
+  "cards": [
+    {
+      "name": "Slime",
+      "health": 1,
+      "damage": 1
+    },
+    {
+      "name": "Lazy goblin",
+      "health": 1,
+      "damage": 2
+    },
+    {
+      "name": "Beserker goblin",
+      "health": 3,
+      "damage": 3
+    },
+    {
+      "name": "Magic ballon",
+      "health": 1,
+      "damage": 5
+    },
+    {
+      "name": "Lancer Goblin",
+      "health": 3,
+      "damage": 5
+    },
+    {
+      "name": "Noblemen",
+      "health": 5,
+      "damage": 3
+    }
+  ]
+}
