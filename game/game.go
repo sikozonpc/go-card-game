@@ -1,6 +1,7 @@
 package game
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"math/rand"
@@ -96,12 +97,12 @@ func CreateDeck() Deck {
 }
 
 // Attack : A card attacks another card
-func (p *Player) Attack(attacker Card, defender Card, defenderPlayer Player) {
+func (p *Player) Attack(attacker Card, defender Card, defenderPlayer Player) error {
 	if !isCardInBattlefield(attacker, *p) {
-		log.Printf("Card %v is not in the battlefield and it's trying to attack.", attacker)
+		return errors.New("card is not in the battlefield and it's trying to attack")
 	}
 	if !isCardInBattlefield(defender, defenderPlayer) {
-		log.Printf("Card %v is not in the battlefield and it's trying to attack.", defender)
+		return errors.New("card is not in the battlefield and it's trying to attack")
 	}
 
 	log.Printf("Card %v ATTACKED %v", attacker, defender)
@@ -118,12 +119,43 @@ func (p *Player) Attack(attacker Card, defender Card, defenderPlayer Player) {
 	}
 
 	log.Printf("Resulted from ATTACK %v ATTACKED %v", attacker, defender)
+
+	return nil
+}
+
+// MoveCardToBattlefield : Moves a card to the battlefield
+func (p *Player) MoveCardToBattlefield(c Card) error {
+	if len(p.Hand) == 0 {
+		return errors.New("player hand has no cards to be moved")
+	}
+
+	p.Battlefield = append(p.Battlefield, c)
+
+	// remove from hand
+	for i, card := range p.Hand {
+		if card.ID == c.ID {
+			p.Hand = append(p.Hand[:i], p.Hand[i+1:]...)
+			return nil
+		}
+	}
+
+	return errors.New("could not find tje card on the battlefield")
 }
 
 func killCard(p Player, c Card) {
-	// remove from battlefield
-	fmt.Println("Not Implemented")
+	// find and remove from battlefield
+	for i, card := range p.Battlefield {
+		if card.ID == c.ID {
+			p.Battlefield = append(p.Battlefield[:i], p.Battlefield[i+1:]...)
+		}
+	}
+
 	// add to player graveyard
+	p.Graveyard = append(p.Graveyard, c)
+
+	// TODO: Inflict damage to enemy player
+
+	fmt.Printf("%v has been killed\n", c)
 }
 
 func isCardInBattlefield(c Card, p Player) bool {
