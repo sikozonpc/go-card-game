@@ -31,9 +31,6 @@ func main() {
 		Name:   "Bidoof",
 	}
 
-	//encoder := json.NewEncoder(conn)
-	//decoder := json.NewDecoder(conn)
-
 	jsonData, err := json.Marshal(cardData)
 	if err != nil {
 		log.Fatalln(err)

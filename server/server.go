@@ -5,19 +5,22 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 
 	"github.com/sikozonpc/go-card-game/game"
+	"golang.org/x/net/websocket"
 )
 
 func main() {
-	go server()
+	//go startTCP()
+	go startWebSocket()
 
 	//let the server goroutine run forever
 	var input string
 	fmt.Scanln(&input)
 }
 
-func server() {
+func startTCP() {
 	listener, err := net.Listen("tcp", ":8080")
 	if err != nil {
 		log.Fatalln(err)
@@ -42,6 +45,18 @@ func server() {
 	}
 }
 
+func startWebSocket() {
+	http.Handle("/", websocket.Handler(handleWebSocket))
+	err := http.ListenAndServe(":8082", nil)
+
+	fmt.Println("Listening WS on " + "localhost:8082")
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+}
+
 func handleConnection(conn net.Conn) {
 	fmt.Println("Handling new connection...")
 
@@ -59,4 +74,8 @@ func handleConnection(conn net.Conn) {
 	err := d.Decode(&msg)
 
 	fmt.Println(msg, err)
+}
+
+func handleWebSocket(ws *websocket.Conn) {
+	handleConnection(ws)
 }
