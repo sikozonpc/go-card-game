@@ -11,6 +11,11 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+type clientData struct {
+	Action string
+	Data   interface{}
+}
+
 func main() {
 	//go startTCP()
 	go startWebSocket()
@@ -69,11 +74,35 @@ func handleConnection(conn net.Conn) {
 	// creates a decoder that reads directly from the socket
 	d := json.NewDecoder(conn)
 
-	var msg game.Card
+	var msg clientData
 
 	err := d.Decode(&msg)
 
 	fmt.Println(msg, err)
+
+	data := handleData(msg, conn)
+	if data != nil {
+		jsonMsg, err := json.Marshal(data)
+		if err != nil {
+			log.Fatalln(err)
+			return
+		}
+
+		conn.Write(jsonMsg)
+	}
+}
+
+func handleData(data clientData, conn net.Conn) interface{} {
+	fmt.Printf("GOT MESASGE FROM CLIENT:\n %v", data)
+
+	if data.Action == "@NEW-GAME" {
+		// Create a new battle session
+		board := game.PopulateBoard()
+
+		return clientData{"@NEW-GAME", board}
+	}
+
+	return nil
 }
 
 func handleWebSocket(ws *websocket.Conn) {

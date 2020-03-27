@@ -26,7 +26,8 @@ func openJSON(path string) []byte {
 
 // CardsParser : Parser the decks database and returns a collection of them
 func CardsParser() Deck {
-	jsonBytes := openJSON("./game/cards.json")
+	pwd, _ := os.Getwd()
+	jsonBytes := openJSON(pwd + "/../game/cards.json")
 
 	d := Deck{}
 

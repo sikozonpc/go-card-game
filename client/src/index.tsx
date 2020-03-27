@@ -1,12 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
-import App from './screens/WebsocketWrapper/WebsocketWrapper'
+import Battle from './screens/Battle/Battle'
 import * as serviceWorker from './serviceWorker'
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <Battle />
   </React.StrictMode>,
   document.getElementById('root')
 )
