@@ -31,12 +31,13 @@ func CardsParser() Deck {
 
 	d := Deck{}
 
-	// add unique ID to card
+	json.Unmarshal(jsonBytes, &d)
+
+	// add unique uuid to a card
 	for i := range d.Cards {
+		log.Println(i, d.Cards[i])
 		d.Cards[i].ID = strconv.Itoa(i)
 	}
-
-	json.Unmarshal(jsonBytes, &d)
 
 	return d
 }

@@ -8,8 +8,8 @@ import (
 	"time"
 )
 
-// DeckNaxLen : Maximum length of deck
-const DeckNaxLen = 30
+// DeckMaxLen : Maximum length of deck
+const DeckMaxLen = 30
 
 // Card : Card
 type Card struct {
@@ -82,11 +82,13 @@ func (d *Deck) Draw(n int) []Card {
 
 // CreateDeck : Randomly selects from the collection of cards and creates a Deck
 func CreateDeck() Deck {
-	cards := make([]Card, DeckNaxLen)
+	cards := make([]Card, DeckMaxLen)
 	deckCollection := CardsParser()
 
 	seed := rand.NewSource(time.Now().UnixNano())
 	rnd := rand.New(seed)
+
+	deckCollection.Shuffle()
 
 	for i := range cards {
 		randint := rnd.Intn(len(deckCollection.Cards))

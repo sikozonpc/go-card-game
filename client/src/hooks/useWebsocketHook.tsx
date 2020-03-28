@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 /** WebSocket wrapper */
 const useWebsocket = (
@@ -14,7 +14,7 @@ const useWebsocket = (
   }, [])
 
 
-  /** This function establishes the connect with the websocket and also ensures constant reconnection if connection closes */
+  /** Establishes the connect with the websocket and also ensures constant reconnection if connection closes */
   function connect() {
     var ws = new WebSocket("ws://localhost:8082/ws")
     let connectInterval: any

@@ -95,11 +95,14 @@ func handleConnection(conn net.Conn) {
 func handleData(data clientData, conn net.Conn) interface{} {
 	fmt.Printf("GOT MESASGE FROM CLIENT:\n %v", data)
 
-	if data.Action == "@NEW-GAME" {
-		// Create a new battle session
-		board := game.PopulateBoard()
+	switch data.Action {
+	case "@NEW-GAME":
+		{
+			// Create a new battle session
+			board := game.PopulateBoard()
 
-		return clientData{"@NEW-GAME", board}
+			return clientData{"@NEW-GAME", board}
+		}
 	}
 
 	return nil

@@ -11,3 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+
+.Battlefield {
+  background-color: #222222;
+}
+
+.Card {
+  color: #ffffff;
+  border: 1px solid #f0f0f0;
+  padding: 10px;
+  margin: 20px;
+  width: 130px;
+  background-color: green;
+  height: 200px;
+}
+
+.Stats {
+  display: flex;
+  flex-flow: row nowrap;   
+  justify-content: space-between;
+}
+
+.Hand {
+  display: flex;
+}
