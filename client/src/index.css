@@ -15,6 +15,11 @@ code {
 
 .Battlefield {
   background-color: #222222;
+  width: 100%;
+  height: 400px;
+}
+.Battlefield-area {
+  display: flex;
 }
 
 .Card {
@@ -35,4 +40,10 @@ code {
 
 .Hand {
   display: flex;
+}
+
+.Game {
+  background-color: #555555;
+  width: 100%;
+  height: 100%;
 }

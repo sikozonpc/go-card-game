@@ -90,6 +90,8 @@ func CreateDeck() Deck {
 
 	deckCollection.Shuffle()
 
+	//FIXME: Some cards are getting duplicates cause of this, since the deck requires more
+	// cards then what the colletion has
 	for i := range cards {
 		randint := rnd.Intn(len(deckCollection.Cards))
 		cards[i] = deckCollection.Cards[randint]

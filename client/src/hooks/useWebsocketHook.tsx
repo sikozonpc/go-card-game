@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 
+import { ClientData } from '../types'
+
 /** WebSocket wrapper */
 const useWebsocket = (
   messageListener: (ev: MessageEvent) => void
@@ -61,7 +63,7 @@ const useWebsocket = (
 
 
 
-  function sendMessage(message: object) {
+  function sendMessage(message: ClientData) {
     if (!ws) {
       console.warn("No web socket")
       return

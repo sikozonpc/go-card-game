@@ -11,7 +11,18 @@ import (
 	"golang.org/x/net/websocket"
 )
 
+// Board : Local game board data
+var Board game.Board
+
 type clientData struct {
+	Action string
+	Data   struct {
+		Card game.Card
+		To   string
+	}
+}
+
+type clientResponse struct {
 	Action string
 	Data   interface{}
 }
@@ -99,9 +110,22 @@ func handleData(data clientData, conn net.Conn) interface{} {
 	case "@NEW-GAME":
 		{
 			// Create a new battle session
-			board := game.PopulateBoard()
+			Board = game.PopulateBoard()
 
-			return clientData{"@NEW-GAME", board}
+			return clientResponse{"@NEW-GAME", Board}
+		}
+	case "@MOVE-CARD-TO-BATTLEFIELD":
+		{
+
+			var playedCard interface{} = data.Data.Card
+			c, ok := playedCard.(game.Card)
+			if ok {
+				Board.PlayerOne.MoveCardToBattlefield(c)
+				return clientResponse{"@MOVE-CARD-TO-BATTLEFIELD", Board}
+			}
+
+			log.Println("Failed to convert playedCard to card")
+			return clientResponse{"@ERROR", "Failed to convert playerCard to card"}
 		}
 	}
 

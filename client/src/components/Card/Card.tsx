@@ -1,19 +1,37 @@
 import React from 'react'
-import { CardProps } from '../../../types'
-import Draggable, { DraggableData, DraggableEvent } from 'react-draggable'
+import { CardProps, EntityTypes } from '../../types'
+import { useDrag, DragSourceMonitor } from 'react-dnd'
 
-const Card: React.FC<CardProps> = ({ data, ...rest }) => {
+export type ItemProps = {
+  type: string,
+  name?: string
+}
 
-  function onDragStophandler(e: DraggableEvent, data: DraggableData) {
-    //console.log(e, data)
-  }
+/** Card element */
+const Card: React.FC<CardProps> = ({ data, onDropEvent, ...rest }) => {
+
+  const [{ isDragging }, drag] = useDrag({
+    item: { type: EntityTypes.CARD },
+    end: (item: ItemProps | undefined, monitor: DragSourceMonitor) => {
+      const dropResult = monitor.getDropResult()
+
+      if (item && dropResult) {
+        console.log(`You dropped a ${item.type} into a ${dropResult.name}!`)
+
+        if (onDropEvent) {
+          onDropEvent()
+        }
+      }
+    },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  })
+
+  const opacity = isDragging ? 0.4 : 1
 
   return (
-    <Draggable
-      onStop={onDragStophandler}
-      {...rest}
-    >
-    <div className='Card'>
+    <div className='Card' ref={drag} style={{ opacity }} {...rest}>
       <p>{data.name}</p>
 
       <div className='Stats'>
@@ -21,7 +39,6 @@ const Card: React.FC<CardProps> = ({ data, ...rest }) => {
       <p>DMG: {data.damage}</p>
       </div>
     </div>
-    </Draggable>
   )
 }
 
