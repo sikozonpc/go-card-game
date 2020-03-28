@@ -1,12 +1,12 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import './index.css'
-import Battle from './screens/Battle/Battle'
+import Lobby from './screens/Lobby'
 import * as serviceWorker from './serviceWorker'
 
 ReactDOM.render(
   <React.StrictMode>
-    <Battle />
+    <Lobby />
   </React.StrictMode>,
   document.getElementById('root')
 )

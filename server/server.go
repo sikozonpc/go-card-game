@@ -7,7 +7,9 @@ import (
 	"net"
 	"net/http"
 
-	"github.com/sikozonpc/go-card-game/game"
+	"github.com/rs/cors"
+	"github.com/sikozonpc/go-card-game/server/api"
+	"github.com/sikozonpc/go-card-game/server/game"
 	"golang.org/x/net/websocket"
 )
 
@@ -28,7 +30,7 @@ type clientResponse struct {
 }
 
 func main() {
-	//go startTCP()
+	go startRestAPI()
 	go startWebSocket()
 
 	//let the server goroutine run forever
@@ -61,11 +63,29 @@ func startTCP() {
 	}
 }
 
+func startRestAPI() {
+	s := &api.RestServer{}
+
+	c := cors.New(cors.Options{
+		AllowedOrigins: []string{"*"},
+	})
+
+	http.Handle("/api", s)
+	err := http.ListenAndServe(":8083", c.Handler(s))
+
+	log.Println("[API]: Listening API on localhost:8083")
+
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
+}
+
 func startWebSocket() {
 	http.Handle("/", websocket.Handler(handleWebSocket))
 	err := http.ListenAndServe(":8082", nil)
 
-	fmt.Println("Listening WS on " + "localhost:8082")
+	fmt.Println("[WS]: Listening WS on localhost:8082")
 
 	if err != nil {
 		fmt.Println(err)
