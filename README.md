@@ -1,13 +1,7 @@
 # Golang card game implementation
 
-# Server
+Client-server project built in Golang and Typescript.
 
-- Written in Go
-- TCP connection
-- JSON data ?
+The server is constructed of a REST API and a Webscoket route that serves the real time matches and the rest api is used for operations outside of the match (create a game, join a game, etc...)
 
-# Client
-
-- Written in Python or JavaScript
-- UI interface
-- All time connection with Server and sync UI from the server
+On the server runs the whole game engine, the client only renders the UI and calls the actions, while in the server all of the logic behind  the game is taken care of.
