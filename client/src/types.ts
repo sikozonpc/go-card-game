@@ -27,3 +27,9 @@ export interface BattlefieldProps {
     playerTwo: CardType[],
   }
 }
+
+export interface PlayerLobbyProps {
+  players: any[],
+
+  onGameStart: () => void,
+}

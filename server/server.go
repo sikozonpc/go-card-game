@@ -4,17 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"net"
 	"net/http"
 
+	"github.com/gorilla/mux"
+	"github.com/gorilla/websocket"
 	"github.com/rs/cors"
-	"github.com/sikozonpc/go-card-game/server/api"
 	"github.com/sikozonpc/go-card-game/server/game"
-	"golang.org/x/net/websocket"
 )
 
 // Board : Local game board data
 var Board game.Board
+
+var gameOngoing = false
+
+var upgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
 
 type clientData struct {
 	Action string
@@ -30,113 +36,99 @@ type clientResponse struct {
 }
 
 func main() {
-	go startRestAPI()
-	go startWebSocket()
+	r := mux.NewRouter().StrictSlash(true)
 
-	//let the server goroutine run forever
-	var input string
-	fmt.Scanln(&input)
-}
-
-func startTCP() {
-	listener, err := net.Listen("tcp", ":8080")
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
-	defer func() {
-		listener.Close()
-		fmt.Println("Listener closed")
-	}()
-
-	fmt.Println("Server started successfully!")
-
-	for {
-		conn, err := listener.Accept()
-		if err != nil {
-			log.Fatalln(err)
-			return
-		}
-
-		go handleConnection(conn)
-	}
-}
-
-func startRestAPI() {
-	s := &api.RestServer{}
+	r.HandleFunc("/newgame", newGameHandler)
+	r.HandleFunc("/game", currenGameHandler)
+	r.HandleFunc("/ws", wsEndpoint)
 
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 	})
 
-	http.Handle("/api", s)
-	err := http.ListenAndServe(":8083", c.Handler(s))
-
-	log.Println("[API]: Listening API on localhost:8083")
-
-	if err != nil {
-		fmt.Println(err)
-		panic(err)
-	}
+	log.Fatalln(http.ListenAndServe(":8083", c.Handler(r)))
 }
 
-func startWebSocket() {
-	http.Handle("/", websocket.Handler(handleWebSocket))
-	err := http.ListenAndServe(":8082", nil)
+func newGameHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("[API]: New game started from: %v", r.RemoteAddr)
 
-	fmt.Println("[WS]: Listening WS on localhost:8082")
+	Board = game.PopulateBoard()
+	gameOngoing = true
 
+	response := clientResponse{Action: "@NEWGAME", Data: Board}
+
+	jsonData, err := json.Marshal(response)
 	if err != nil {
-		fmt.Println(err)
-		panic(err)
+		log.Fatalln(err)
+		return
 	}
+
+	w.Write(jsonData)
 }
 
-func handleConnection(conn net.Conn) {
-	fmt.Println("Handling new connection...")
+func currenGameHandler(w http.ResponseWriter, r *http.Request) {
+	if gameOngoing {
+		// Serve the board if there is one
+		log.Println("Serving on going game")
+		session := clientResponse{Action: "@SYNC", Data: Board}
 
-	// Close connection when this function ends
-	defer func() {
-		fmt.Println("Closing connection...")
-		conn.Close()
-	}()
-
-	// creates a decoder that reads directly from the socket
-	d := json.NewDecoder(conn)
-
-	var msg clientData
-
-	err := d.Decode(&msg)
-
-	fmt.Println(msg, err)
-
-	data := handleData(msg, conn)
-	if data != nil {
-		jsonMsg, err := json.Marshal(data)
+		jsonData, err := json.Marshal(session)
 		if err != nil {
 			log.Fatalln(err)
 			return
 		}
 
-		conn.Write(jsonMsg)
+		w.Write(jsonData)
 	}
 }
 
-func handleData(data clientData, conn net.Conn) interface{} {
-	fmt.Printf("GOT MESASGE FROM CLIENT:\n %v", data)
+func wsEndpoint(w http.ResponseWriter, r *http.Request) {
+	upgrader.CheckOrigin = func(r *http.Request) bool { return true }
+
+	// upgrade this connection to a WebSocket connection
+	ws, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Printf("Client Connected %v \n", r.RemoteAddr)
+
+	wsReader(ws)
+
+}
+
+func wsReader(conn *websocket.Conn) {
+	defer func() {
+		fmt.Println("Closing connection...")
+		//todo: remove from users lists
+		conn.Close()
+	}()
+
+	// the for is important to keep the connection open
+	for {
+
+		var msg clientData
+
+		err := conn.ReadJSON(&msg)
+		if err != nil {
+			log.Println("Error", err)
+		}
+		fmt.Println(msg)
+
+		data := handleData(msg, conn)
+
+		if data != nil {
+			conn.WriteJSON(data)
+		}
+	}
+}
+
+func handleData(data clientData, conn *websocket.Conn) interface{} {
+	fmt.Printf("GOT MESASGE FROM CLIENT:  %v", data)
 
 	switch data.Action {
-	case "@NEW-GAME":
-		{
-			// Create a new battle session
-			Board = game.PopulateBoard()
-
-			return clientResponse{"@NEW-GAME", Board}
-		}
 	case "@MOVE-CARD-TO-BATTLEFIELD":
 		{
-
 			var playedCard interface{} = data.Data.Card
 			c, ok := playedCard.(game.Card)
 			if ok {
@@ -150,8 +142,4 @@ func handleData(data clientData, conn net.Conn) interface{} {
 	}
 
 	return nil
-}
-
-func handleWebSocket(ws *websocket.Conn) {
-	handleConnection(ws)
 }

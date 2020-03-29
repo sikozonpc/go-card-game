@@ -4,8 +4,9 @@ import { ClientData } from '../types'
 
 /** WebSocket wrapper */
 const useWebsocket = (
-  messageListener: (ev: MessageEvent) => void
-  ) => {
+  url: string,
+  messageListener: ( ev: MessageEvent) => void
+) => {
   const [ws, setWebsocket] = useState<WebSocket | null>(null)
 
   let timeout = 250 // Initial timeout duration as a class variable
@@ -18,7 +19,7 @@ const useWebsocket = (
 
   /** Establishes the connect with the websocket and also ensures constant reconnection if connection closes */
   function connect() {
-    var ws = new WebSocket("ws://localhost:8082/ws")
+    var ws = new WebSocket(url)
     let connectInterval: any
 
     // websocket onopen event listener

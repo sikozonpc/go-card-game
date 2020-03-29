@@ -4,38 +4,25 @@ import Backend from 'react-dnd-html5-backend'
 
 import useWebsocket from '../../hooks/useWebsocketHook'
 import Card from '../../components/Card'
-import { CardType } from '../../types'
+import { CardType, PlayerLobbyProps } from '../../types'
 import Battlefield from '../../components/Battlefield'
 
-const Battle: React.FC = () => {
-  const [sessionData, setSessionData] = useState<any>()
+const Battle: React.FC<{gameData: any }> = ({ gameData }) => {
+  const [sessionData, setSessionData] = useState<any>(gameData)
 
   const messageListener = (ev: MessageEvent) => {
     setSessionData(JSON.parse(ev.data))
   }
 
-  const { sendMessage } = useWebsocket(messageListener)
+  const { sendMessage } = useWebsocket("ws://localhost:8083/ws" , messageListener)
 
 
   useEffect(() => {
     console.log('got new sessionData: ', sessionData)
   }, [sessionData])
 
-  const startNewGame = () => {
-    sendMessage({
-      Action: '@NEW-GAME',
-      Data: {
-        players: [
-          {
-            name: 'Tiago',
-          },
-          {
-            name: 'Bot 1',
-          }
-        ]
-      }
-    })
-  }
+  //TODO:
+  const joinBattleHandler = () => {}
 
   //TODO:
   const startAttack = () => { }
@@ -49,10 +36,12 @@ const Battle: React.FC = () => {
     })
   }
 
+  if (sessionData === true) return <p>load</p>
+
   const playerOne = sessionData && sessionData.Data.PlayerOne
   const playerTwo = sessionData && sessionData.Data.PlayerTwo
 
-  if (!playerOne || !playerTwo) return <button onClick={startNewGame}>Start new game</button>
+  if (!playerOne || !playerTwo) return <PlayerLobby onGameStart={joinBattleHandler} players={[]} />
 
   return (
     <DndProvider backend={Backend}>
@@ -75,6 +64,20 @@ const Battle: React.FC = () => {
         </div>
       </div>
     </DndProvider>
+  )
+}
+
+const PlayerLobby: React.FC<PlayerLobbyProps> = ({ onGameStart, players }) => {
+  return (
+    <div>
+      <button onClick={onGameStart}>START BATTLE</button>
+
+      <h2>Players lists</h2>
+
+      <ul>
+        {players.map(p => <p>{p}</p>)}
+      </ul>
+    </div>
   )
 }
 
