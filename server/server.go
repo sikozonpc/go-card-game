@@ -15,7 +15,13 @@ import (
 // Board : Local game board data
 var Board game.Board
 
+// flag to tell if there is a game running
 var gameOngoing = false
+
+// clients poll
+var clients = make(map[*websocket.Conn]bool)
+
+var broadcast = make(chan interface{})
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -45,6 +51,11 @@ func main() {
 	c := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 	})
+
+	// Start listening for incoming chat messages
+	go handleMessages()
+
+	log.Println("Server is running on :8083")
 
 	log.Fatalln(http.ListenAndServe(":8083", c.Handler(r)))
 }
@@ -104,14 +115,23 @@ func wsReader(conn *websocket.Conn) {
 		conn.Close()
 	}()
 
+	// Register our new client
+	clients[conn] = true
+
+	fmt.Printf("%+v", clients)
+
 	// the for is important to keep the connection open
 	for {
+
+		//TODO: In the future we'll use pool conns to control the clients
 
 		var msg clientData
 
 		err := conn.ReadJSON(&msg)
 		if err != nil {
 			log.Println("Error", err)
+			delete(clients, conn)
+			break
 		}
 		fmt.Println(msg)
 
@@ -120,6 +140,9 @@ func wsReader(conn *websocket.Conn) {
 		if data != nil {
 			conn.WriteJSON(data)
 		}
+
+		// Send the newly received message to the broadcast channel
+		broadcast <- data
 	}
 }
 
@@ -142,4 +165,20 @@ func handleData(data clientData, conn *websocket.Conn) interface{} {
 	}
 
 	return nil
+}
+
+func handleMessages() {
+	for {
+		// Grab the next message from the broadcast channel
+		msg := <-broadcast
+		// Send it out to every client that is currently connected
+		for client := range clients {
+			err := client.WriteJSON(msg)
+			if err != nil {
+				log.Printf("error: %v", err)
+				client.Close()
+				delete(clients, client)
+			}
+		}
+	}
 }
